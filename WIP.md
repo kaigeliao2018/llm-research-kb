@@ -27,11 +27,12 @@
 
 ## 三件待核实事项（按执行顺序）
 
-### Task 1 · DSA vs CSA+HCA 术语考据 🔴 未开始
-- 派给：网页版（需 PDF）
-- 素材：2 份 PDF 已在桌面
-- 交付物：`wiki/deepseek-v4-dsa-clarification.md`
-- 阻塞 Mac 端：需此结果才能更新 `wiki/deepseek-v4.md` 第 3.1 节
+### Task 1 · DSA vs CSA+HCA 术语考据 ✅ 已完成（2026-04-24 晚）
+- 交付物：`wiki/deepseek-v4-dsa-clarification.md` 已入库
+- 关键反转：CSA/HCA 是官方术语（不是第三方重命名），DSA 是 V3.2 旧技术，被 CSA 包裹
+- `wiki/deepseek-v4.md` 第 3.1 节已重写修正
+- PDF 原件已入 `resources/raw/`
+- **遗留**：网页版提议查 Fello AI 那篇确认"CSA+HCA"二手来源——凯戈决定是否派活
 
 ### Task 2 · Pricing 交叉验证 ⚪ 待派
 - 派给：网页版（纯查官网）

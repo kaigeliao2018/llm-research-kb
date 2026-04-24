@@ -43,3 +43,12 @@
 ### 收工状态（凯戈出门前）
 - 本地无未 commit 变更？待确认（本轮未 git push）
 - 30min push 提醒：本轮未启用（开场流程被打断）
+
+### 2026-04-24 晚 · Task 1 回执入库
+
+- 网页版交付 DSA/CSA/HCA 术语考据，产出 `wiki/deepseek-v4-dsa-clarification.md`
+- **关键反转**：CSA/HCA 是 V4 **官方术语**（不是第三方重命名），DSA 是 V3.2 旧术语，被 CSA 作为第二步调用
+- 三者层级：`CSA = KV 压缩 → DSA`；`HCA = 更狠的压缩 + dense attention`；`DSA ⊂ CSA`
+- 修正：`wiki/deepseek-v4.md` 第 3.1 节整段重写，改掉"DSA 是 V4 核心创新"的错误表述
+- 入库 PDF：`resources/raw/DeepSeek_V4.pdf`（58页官方）+ `resources/raw/DeepSeek_V4_almost_on_the_frontier.pdf`（Simon 博客归档）
+- 网页版提问："要不要让我查 Fello AI 那篇确认 'CSA+HCA' 的二手来源？" → 待凯戈定

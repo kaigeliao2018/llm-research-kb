@@ -41,14 +41,24 @@ V4-Pro 的最高推理档位叫 **V4-Pro-Max**（thinking 全开），benchmark 
 
 ## 三、架构核心创新
 
-### 3.1 混合注意力机制
+### 3.1 混合注意力机制（Hybrid Attention）
 
-> ⚠️ 信息源存在表述差异，待读技术报告 PDF 确认统一术语
+> ✅ 2026-04-24 已核对技术报告 PDF（详见 [deepseek-v4-dsa-clarification.md](./deepseek-v4-dsa-clarification.md)）
 
-- **DeepSeek 官方公告措辞**："Token-wise compression + DSA (DeepSeek Sparse Attention)"
-- **第三方评测（Simon Willison / Fello AI）措辞**："CSA (Compressed Sparse Attention) + HCA (Heavily Compressed Attention)"
+V4 真正的架构创新是 **CSA 和 HCA 两种注意力层的交替堆叠**（hybrid interleaved），两者都是 V4 论文在 Abstract 里就提出的**官方术语**。
 
-两种说法大概率指同一套机制（CSA/HCA 可能是 DSA 的两个子模块），**待 PDF 核实后统一更新**。
+- **CSA（Compressed Sparse Attention）** —— V4 新创
+  1. 将每 m 个 token 的 KV cache 压缩为一条
+  2. 在压缩后的 KV 上运行 **DSA（DeepSeek Sparse Attention）**，每个 query 只 attend to top-k 压缩项
+  3. DSA 本身是 V3.2 的旧技术，V4 沿用，作为 CSA 内部的第二步
+
+- **HCA（Heavily Compressed Attention）** —— V4 新创
+  1. 以更激进的压缩率（m' ≫ m）压缩 KV cache
+  2. 在压缩后的 KV 上做 **dense attention**（不稀疏）
+
+**三者关系速记**：`CSA = KV 压缩 + DSA`；`HCA = 更狠的 KV 压缩 + 稠密 attention`；`DSA ⊂ CSA`（旧技术，被包在外层里）。
+
+首轮常见误解：把 DSA 写成 V4 的核心创新。**实际上 V4 的创新点在 CSA+HCA 的 hybrid 组合**，以及 HCA 这条"只压不稀疏"的新路径。
 
 ### 3.2 训练侧改动
 - **优化器**：主参数从 AdamW 换成 **Muon**
@@ -164,10 +174,11 @@ model 改为：deepseek-v4-pro 或 deepseek-v4-flash
 
 ## 十、待核实事项（TODO）
 
-- [ ] 读 [DeepSeek_V4.pdf](https://huggingface.co/deepseek-ai/DeepSeek-V4-Pro/blob/main/DeepSeek_V4.pdf) 核对 DSA 与 CSA+HCA 的关系
-- [ ] 官方 pricing 页面何时正式公开，Simon 的数字是否准确
-- [ ] Claude Code 实际接入测试（参考已有 GLM 接入经验）
+- [x] ~~核对 DSA 与 CSA+HCA 关系~~ ✅ 2026-04-24 已核（[考据笔记](./deepseek-v4-dsa-clarification.md)）
+- [ ] 官方 pricing 页面何时正式公开，Simon 的数字是否准确（Task 2 待派）
+- [ ] Claude Code 实际接入测试（Task 3 待派）
 - [ ] MoE 路由效果实测，V4-Flash 在凯戈实际场景下能否替代 V4-Pro
+- [ ] Hybrid Attention 详细实现（CSA/HCA 交替比例、每模型层数）—— 见 PDF 4.2.1 节（第 25 页）
 
 ---
 
