@@ -106,12 +106,17 @@ V4 真正的架构创新是 **CSA 和 HCA 两种注意力层的交替堆叠**（
 
 ## 六、价格
 
-来源：Simon Willison 2026-04-24 评测（官方 pricing 页面尚未统一公开，Fello AI 称"未公布"——取 Simon 的数字并标注）
+> ✅ 2026-04-27 已通过 WebFetch 实测官网核实，详见 [deepseek-v4-pricing](./deepseek-v4-pricing.md) 子页
+> [Source: WebFetch https://api-docs.deepseek.com/quick_start/pricing]
 
-| 模型 | 输入（$/M tok） | 输出（$/M tok） |
-|------|---------------|---------------|
-| V4-Flash | **$0.14** | **$0.28** |
-| V4-Pro | **$1.74** | **$3.48** |
+| 模型 | 输入 cache miss | 输入 cache hit | 输出 |
+|------|---------------|---------------|------|
+| V4-Flash | **$0.14**/M | **$0.0028**/M | **$0.28**/M |
+| V4-Pro | **$1.74**/M | **$0.0145**/M | **$3.48**/M |
+
+**关键里程碑**：2026-04-26 cache hit 价格降至原价的 1/10（接近免费），长上下文重复调用场景成本断崖式下降。
+
+**V4-Pro 当前限时折扣**：75% off，截止 **2026-05-31 15:59 UTC**。
 
 **对比坐标**：
 - V4-Flash 比 GPT-5.4 Nano 还便宜——**当前最便宜的小型前沿模型**
@@ -175,10 +180,11 @@ model 改为：deepseek-v4-pro 或 deepseek-v4-flash
 ## 十、待核实事项（TODO）
 
 - [x] ~~核对 DSA 与 CSA+HCA 关系~~ ✅ 2026-04-24 已核（[考据笔记](./deepseek-v4-dsa-clarification.md)）
-- [ ] 官方 pricing 页面何时正式公开，Simon 的数字是否准确（Task 2 待派）
-- [ ] Claude Code 实际接入测试（Task 3 待派）
+- [x] ~~官方 pricing 页面何时正式公开，Simon 的数字是否准确~~ ✅ 2026-04-27 已核（[定价子页](./deepseek-v4-pricing.md)，Simon 数字准确，但 cache hit 4-26 起降至 1/10）
+- [x] ~~Claude Code 接入文档级核实~~ ✅ 2026-04-27 已核（[接入指南](./deepseek-v4-claude-code-integration.md)）；⏳ 凯戈实测 `ANTHROPIC_API_KEY` vs `ANTHROPIC_AUTH_TOKEN` 哪个生效后回填
 - [ ] MoE 路由效果实测，V4-Flash 在凯戈实际场景下能否替代 V4-Pro
 - [ ] Hybrid Attention 详细实现（CSA/HCA 交替比例、每模型层数）—— 见 PDF 4.2.1 节（第 25 页）
+- [ ] V3 / V3.2 历史价格官网核实（pricing 子页已标 STRICT-VERIFY）
 
 ---
 
