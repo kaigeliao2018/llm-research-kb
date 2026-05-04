@@ -105,3 +105,4 @@ Fast Mode：`/fast` 切换（同 Opus 4.6 模型，输出更快）
 - [[slash-commands]] — 命令速查
 - [[workflow-patterns]] — 凯戈专属工作流
 - [[skills]] — Skills 实战指南（含视频评估案例 + 课件素材）
+- [[skills-howto]] — Skill 操作手册（机制/安装/最小示例）
