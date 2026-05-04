@@ -52,3 +52,30 @@
 - 修正：`wiki/deepseek-v4.md` 第 3.1 节整段重写，改掉"DSA 是 V4 核心创新"的错误表述
 - 入库 PDF：`resources/raw/DeepSeek_V4.pdf`（58页官方）+ `resources/raw/DeepSeek_V4_almost_on_the_frontier.pdf`（Simon 博客归档）
 - 网页版提问："要不要让我查 Fello AI 那篇确认 'CSA+HCA' 的二手来源？" → 待凯戈定
+
+## 2026-05-05 · wiki/claude-code/ Skills 主题入库
+
+### 起因
+凯戈看了一个 8 分钟视频"Claude Code 顶级 Skills 15 选"，让 Gemini 转文字、网页端 Claude 做了一份分析。要求 CLI Claude 二次审查 + 整合为 wiki + 课件素材。
+
+### 产出
+- 第 7 篇 `skills.md` v1（commit `8069a98`）—— 视频案例 + 项目矩阵 + 课件大纲（基于初步认知）
+- 派 3 个 agent 并行核对官方源后，发现 v1 有错（webapp-testing 误判为社区 Skill）+ 大量漏报
+- 第 7 篇 `skills.md` v2 + 第 8 篇 `skills-howto.md`（commit `421ddf8`）
+
+### 关键发现
+1. Anthropic 官方 Skill 总数 **17 个**（仓库 128k★ 已核），视频只列 5 个真官方 + 10 个误归类
+2. 官方 MCP 生态修正：GitHub MCP（GitHub 官方）+ Cloudflare MCP（CF 官方）+ Playwright MCP（微软官方）—— 都对凯戈高匹配，视频未提
+3. 视频漏报对凯戈最有价值的官方 Skill：`xlsx`（RobotEvents 数据） / `claude-api` / `doc-coauthoring` / `mcp-builder` / `pptx` / `canvas-design`
+4. 网页端 Claude 分析编造了大量项目细节（"Day 4"、"LEVEL3 框架"、"四 Agent 架构"），保留为课件反面教材
+
+### 实施路径（三阶段）
+- 阶段 A（本周）：装 anthropics/skills marketplace + 实测 `pdf` 解析 vex-iq-kb 新赛季 Game Manual v0.1，对比 fitz
+- 阶段 B（按触发条件）：未来项目储备（webapp-testing / frontend-design / GitHub MCP 等）
+- 阶段 C（持续）：沉淀为知识库 + 教学课件（已规划三课时拆分）
+
+### Push 状态
+- 两个 commit 已落本地（`8069a98`、`421ddf8`）
+- v1 已成功 push（`798aa92..8069a98`）
+- v2 push 时 GitHub 连接超时（2026-05-05 晚）
+- ⏳ **下次上线动作**：网络恢复时 `cd ~/llm-research-kb && git push`
