@@ -176,13 +176,15 @@ Claude Code 生态里"Skill"被泛化使用，**4 类东西经常被混为一谈
 
 ### 阶段 A：现有项目立即试用（本周）
 
-| # | 动作 | 落地项目 | 验证产出 |
-|---|---|---|---|
-| 1 | 装 `anthropics/skills` 整个 marketplace | 全局（一次到位 17 个） | `/plugin marketplace list` 确认 |
-| 2 | 启用 `pdf` Skill | vex-iq-kb 解析 Game Manual v0.1 | 对比 fitz 产出（图像/表格/章节切分） |
-| 3 | 启用 `xlsx` Skill | vex-competition-tracker 历史数据 | RobotEvents API JSON → xlsx 报表 |
-| 4 | 装 **GitHub MCP** | 全局 | 跨 8+ 仓库批量 PR/Action 状态查询 |
-| 5 | 装 **Context7 MCP** | vex-iq-build-assistant feature/analyzer | Three.js 调用对比记忆 vs 实时文档 |
+| # | 动作 | 落地项目 | 验证产出 | 状态 |
+|---|---|---|---|---|
+| 1 | 装 `anthropics/skills` 整个 marketplace | 全局（一次到位 17 个） | `/plugin marketplace list` 确认 | ✅ 2026-05-05 完成（HTTPS URL，不能用 SSH 短名）|
+| 2 | 启用 `pdf` Skill | vex-iq-kb 解析 Game Manual v0.1 | 对比 fitz 产出（图像/表格/章节切分） | ✅ 2026-05-05 完成 → §10.1 评分 |
+| 3 | 启用 `xlsx` Skill | vex-competition-tracker 历史数据 | RobotEvents API JSON → xlsx 报表 | ⏳ 待触发 |
+| 4 | 装 **GitHub MCP** | 全局 | 跨 8+ 仓库批量 PR/Action 状态查询 | ⏳ 待触发 |
+| 5 | 装 **Context7 MCP** | vex-iq-build-assistant feature/analyzer | Three.js 调用对比记忆 vs 实时文档 | ⏳ 待触发 |
+
+> **实测脚注（2026-05-05）**：第 1 步装一个 `document-skills` plugin = 仓库 `skills/` 下 17 个 skill 全部注入。`marketplace.json` 的 `skills` 字段不约束加载范围。详见 §10.1「marketplace 安装行为修正」。
 
 ### 阶段 B：未来项目储备（按触发条件）
 
@@ -208,6 +210,10 @@ Claude Code 生态里"Skill"被泛化使用，**4 类东西经常被混为一谈
 ---
 
 ## 七、不装清单（理由比"不推荐"重要）
+
+> ⚠️ **2026-05-05 实测发现**：本表在 Anthropic 官方 marketplace 路径上**机制不可执行** — 装 `document-skills` 一个 plugin 就把仓库 17 个 skill 全部注入（含本表中的 brand-guidelines / theme-factory / slack-gif-creator / algorithmic-art）。当前缓解：skill 仅 metadata 注入，不主动执行；本表的"不装"理由仍作为**用法约束**有效（即「装上但不主动调用」）。详见 §10.1。
+>
+> 战略修正（切第三方 marketplace / 自建 marketplace 路径）留作下次开工首件事。
 
 | Skill / 工具 | 不装的真正原因 |
 |---|---|
@@ -275,8 +281,56 @@ Claude Code 生态里"Skill"被泛化使用，**4 类东西经常被混为一谈
 - ✅ skills-howto.md（独立操作手册）
 - ✅ **skills-factcheck-2026-05-05.md**（网页版 KB 三大硬伤研究痕迹，2026-05-05 追加）
 - ✅ **skills-ecosystem.md**（生态地图：官方资源 + 社区项目 + 业界观点，2026-05-05 追加）
-- ⏳ 阶段 A 五步实测后回填评分
+- ✅ **阶段 A 第 1+2 步实测完成（2026-05-05 下午）** — 详见下方 §10.1
+- ⏳ 阶段 A 第 3-5 步（xlsx / GitHub MCP / Context7 MCP）按触发条件做
 - ⏳ 课件成型时拆为 3 课时
+
+---
+
+### 10.1 阶段 A 第 2 步：pdf skill 实测评分（2026-05-05）
+
+**输入**：`VIQRC-level-up-0.1-manual.pdf`（93 页 / 9.33 MB）+ 中文版 73 页对照
+**对照基线**：fitz / PyMuPDF 1.27.2.2（karpathy-kb 既有管线）
+**完整报告**：`~/vex-iq-kb/raw/game-manual/skill-test/REPORT.md`
+
+#### pdf skill vs fitz 综合评分
+
+| 子项 | pdf skill | fitz | 备注 |
+|---|---|---|---|
+| 文本质量 | ★★★★ | ★★★★ | 平 |
+| 文本速度 | ★★ | ★★★★★ | fitz 28×（1.1s vs 31s） |
+| 表格精度 | ★★ | ★★★★★ | **fitz 完胜**（pdfplumber 38 个表中 25 个误判：版权框 11 + Violation notes 红框 14；fitz 13 个全是真表） |
+| 表格速度 | ★★★ | ★★★★ | fitz 3×（10.6s vs 31s） |
+| 图像召回 | ★★★★ | ★★★★ | 平（金标准 R3-1/R4-1 双方 phash d=0 命中） |
+| 图像易用性 | ★★ | ★★★★ | fitz 自带页码 + 直接 PNG；pdfimages 输出 .ppm 无页码 |
+| 中文支持 | ★★★★★ | ★★★★★ | 平（中文版 0 乱码、长句完整） |
+| OCR 能力 | ★★★★（pytesseract） | ★（无原生） | skill 加分项（本次未实测） |
+| 表单处理 | ★★★★★（forms.md） | ★★ | skill 加分项（本次未实测） |
+| **综合** | **3.4 ★** | **4.0 ★** | **当前 VEX 任务 fitz 主选** |
+
+#### 决策矩阵
+
+| 场景 | 选谁 | 理由 |
+|---|---|---|
+| 积分表 + 图示密集的 born-digital PDF（如 Game Manual） | **fitz** | 精度高、自带页码、单库部署 |
+| 扫描 PDF / 需要 OCR | **pdf skill** | pytesseract + pdf2image 是 fitz 弱项 |
+| 表单填写 | **pdf skill** | forms.md + 8 个填表脚本 |
+| 中文 PDF | 任选 | pdfplumber / fitz 中文支持都 ★★★★★ |
+
+#### 意外发现（非评分项但重要）
+
+1. **中文版 PDF 反而比英文版干净**：英文版 25 个表格误判（红框 + 装饰底框）在中文版**为 0** —— 噪声根因是英文版排版工艺，不是 pdfplumber 算法缺陷
+2. **pdfimages 比 fitz 多 109 张图**，但去重后只多 15 张唯一图 —— 多出的是装饰元素重复实例，非新内容
+3. **R3 / R4 主条文物理页号中英完全一致**（都在 page 48-49）—— VEX 排版结构性巧合
+
+#### 实测发现：marketplace 安装行为修正
+
+**实测**：执行 `/plugin install document-skills@anthropic-agent-skills` 后，仓库 `skills/` 目录下的 **17 个 skill 全部注入会话**（包括 §7 不装清单中的 brand-guidelines / theme-factory / slack-gif-creator / algorithmic-art）。
+
+**含义**：marketplace.json 中 plugin 的 `skills` 字段不约束实际加载范围，整个仓库扫描。
+
+> ⚠️ 这意味着 §7「不装清单」在 Anthropic 官方 marketplace 这条路上**机制不可执行**。当前缓解：skill 仅 metadata 注入，不主动执行，行为污染可控。
+> 待办：下次开工首件事 — 重审 §2/§6/§7 战略段（切第三方 marketplace 还是接受全装策略）。
 
 ---
 

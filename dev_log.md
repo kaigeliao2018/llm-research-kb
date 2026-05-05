@@ -124,3 +124,55 @@
 ### 下一步
 - 阶段 A：装 anthropics/skills marketplace + 实测 `pdf` Skill 解析新赛季 Game Manual v0.1，对比 fitz
 - 桌面 `claude-skills-kb.md` 处理：归档为 raw 素材或删除（凯戈定）
+
+---
+
+## 2026-05-05 傍晚 · 阶段 A 第 1+2 步实测（pdf skill vs fitz）
+
+### 接续
+上一笔下一步：「装 anthropics/skills marketplace + 实测 pdf Skill 解析新赛季 Game Manual v0.1，对比 fitz」。本笔完成。
+
+### 路上踩的两个坑
+1. **`/plugin marketplace add anthropics/skills` SSH 拒**：CC 把 owner/repo 短名解析成 SSH `git@github.com:...`，本机无 SSH key → 改 HTTPS URL `https://github.com/anthropics/skills.git` 通过
+2. **HTTPS 仍然 timeout**：根因是 macOS 系统代理 `127.0.0.1:7897` 但 git 不读 → 配 git 全局代理 `git config --global {http,https}.proxy http://127.0.0.1:7897` 修复。**附带收益**：之前 INDEX 备忘的 llm-research-kb 两个 push 超时 commit 已自动同步
+
+### 安装行为重要修正
+- 装 `document-skills@anthropic-agent-skills` 一个 plugin = 仓库 `skills/` 下 **17 个 skill 全部注入**会话（含 §7 不装清单中的 brand-guidelines / theme-factory / slack-gif-creator / algorithmic-art）
+- `marketplace.json` 的 `skills` 字段不约束加载范围，整个仓库扫描
+- 含义：skills.md §7「不装清单」在 Anthropic 官方 marketplace 路径上**机制不可执行**
+- 当前缓解：skill 仅 metadata 注入不主动执行；战略修正留作下次开工首件事
+
+### 4 维实测 + 中文版迷你对照
+输入：`VIQRC-level-up-0.1-manual.pdf`（93 页 / 9.33 MB）+ 中文版 73 页对照
+对照基线：fitz / PyMuPDF 1.27.2.2
+
+**两次反转**：
+1. 表面看 pdfplumber 38 个表 vs fitz 13 个，pdfplumber 完胜 → **深挖反转**：pdfplumber 25 个误判（11 版权框 + 14 Violation notes 红框），真表 13 个 = fitz；fitz 精度 100%、pdfplumber ~34%
+2. pdfimages 233 张图 vs fitz 124 张 → **phash 去重**：pdfimages 唯一 48 / fitz 唯一 33，差距缩到 15 张
+
+**金标准命中**：figure-R3-1（size limit）+ figure-R4-1（license plate）双方 phash d=0 完美命中；fitz 自带页码（page048 / page049），凯戈翻 PDF 物理页 48-49 验证一致 ✅
+
+**中文版意外大礼包**：
+- pdfplumber 抽 14 表，**全是真表，0 误判**（英文版 25 个误判在中文版完全消失）
+- 中文长句 + 引号 + 括号 + figure 标题全识别，0 乱码
+- **结论**：英文版误判根因是排版工艺（红框 + 装饰底框），不是 pdfplumber 算法缺陷
+
+### 综合评分（详见 skills.md §10.1）
+| | pdf skill | fitz |
+|---|---|---|
+| **VEX Game Manual 类 PDF 总评** | 3.4 ★ | **4.0 ★** |
+
+**决策**：积分表 + 图示密集的 born-digital PDF → fitz 主选；扫描 PDF / 表单 / 中文 → pdf skill 加分项。
+
+### 产出
+- ✅ `~/vex-iq-kb/raw/game-manual/skill-test/REPORT.md` —— 完整对比报告（本地，gitignore）
+- ✅ `~/vex-iq-kb/raw/game-manual/skill-test/run_compare.py` —— 可复用 4 维测试脚本
+- ✅ `wiki/claude-code/skills.md` 三处更新：§10.1 全套评分 + §6 阶段 A 表格加状态列 + §7 顶部 ⚠️ 标记
+- ✅ memory 新增 `vex_iq_game_manual_canonical_path.md`（凯戈手动下载路径）
+- ✅ git 全局代理配置（环境级）
+
+### 下一步（下次开工首件事）
+- **战略段重写**：skills.md §2 / §6 / §7 重审 marketplace all-or-nothing 应对策略（切第三方 / 自建 / 接受全装）—— 涉及决策，单独 session
+- **中英对照实战 v2**：跑两份 PDF 全文 → 章节 diff + 积分表数值对照（不是 skill 评分，是 wiki 入库工艺）
+- **OCR 维度补测**：拿一份扫描 PDF 跑 pytesseract，验证 §10.1 OCR 评分
+
