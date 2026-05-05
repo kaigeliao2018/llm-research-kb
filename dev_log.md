@@ -79,3 +79,48 @@
 - v1 已成功 push（`798aa92..8069a98`）
 - v2 push 时 GitHub 连接超时（2026-05-05 晚）
 - ⏳ **下次上线动作**：网络恢复时 `cd ~/llm-research-kb && git push`
+
+---
+
+## 2026-05-05 下午 · Skills 主题第二轮：网页版 KB 事实核对 + 生态地图归并
+
+### 起因
+凯戈在网页端让 Claude（Opus 4.7）做"Claude Skills 深度搜索"，产出 `~/Desktop/claude-skills-kb.md`（22k 字，12 节，60+ 来源声称），并附"交接 brief"建议直接归档到 `magikid-projects-hub/knowledge-assets/`。
+
+按研究铁律 + Inventory Before Output，CLI Claude 拒绝直接归档，先做事实核对。
+
+### 第一轮预查（目录幻觉）
+- brief 声称"`magikid-projects-hub/knowledge-assets/` 已存在，与四份战略文档同级"
+- 实测：`magikid-projects-hub/` 存在，**knowledge-assets/ 子目录不存在**；LEVEL3-GOVERNANCE 等文件全盘 0 命中
+- 与昨天 `skills.md` §4.3 记录的网页版幻觉模式**完全一致**
+
+### 三个 agent 并行核对 5 项数据点
+| # | 声称 | 判定 |
+|---|---|---|
+| 1 | Superpowers 178k stars | ✅ 实测 178,455 |
+| 2 | 2026-01-15 进官方 marketplace | ✅ PR #148 精确 |
+| 3 | 2025-12-18 开放标准 + agentskills.io | ✅ |
+| 3b | 跨平台采纳列表 Codex/Gemini CLI/Antigravity/OpenCode/Windsurf | ❌ 发布日点名是 MS/OpenAI/Atlassian/Figma/Cursor/GitHub |
+| 4 | Smithery 756 次基准 | ❌ **张冠李戴**：一手是 ScaleKit 75 次；Smithery 自己另有 756 次且**结论相反** |
+| 4b | 数字 1365/4724/44026 | ✅ 来自 ScaleKit |
+| 4c | "省 17 倍" | ❌ 原文 10-32× |
+| 5 | Simon 文章 2025-10-16 | ✅ |
+
+### 三大硬伤
+1. **Smithery / ScaleKit 张冠李戴**（最严重）—— 中文博客 trashwbin.top 把两份独立研究混为一谈
+2. **开放标准跨平台名单错位** —— 发布日合作方非 KB 所列
+3. **Superpowers 安装命令仓库名错** —— 真实是 `claude-plugins-official`
+
+### 产出
+- ✅ `wiki/claude-code/skills-factcheck-2026-05-05.md`（commit `d78e8ae`）—— 研究痕迹
+- ✅ `wiki/claude-code/skills-ecosystem.md`（第 9 篇）—— 生态地图：吸收网页版 KB 70% 可保留部分 + 修正 3 大硬伤 + 删项目幻觉
+- ✅ `skills.md` §10 产物清单更新
+
+### 网页版幻觉模式诊断
+- 跨会话复发——昨天的修正没写入网页版上下文
+- 项目细节"贴身化"是结构性问题，不是单次失误
+- **教训再次确认**：必须拿真实 INDEX 对账，否则建议建立在沙堆上
+
+### 下一步
+- 阶段 A：装 anthropics/skills marketplace + 实测 `pdf` Skill 解析新赛季 Game Manual v0.1，对比 fitz
+- 桌面 `claude-skills-kb.md` 处理：归档为 raw 素材或删除（凯戈定）
