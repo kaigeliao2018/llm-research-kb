@@ -77,6 +77,14 @@ Claude Code 生态里"Skill"被泛化使用，**4 类东西经常被混为一谈
 
 > 注：YouTube 视频里"agent-browser / Superpowers / Tavily / Context7 / tmux"——**官方仓库一律没有**，归社区/MCP/CLI。
 
+**装入策略（2026-05-05 战略修正定型）**：
+
+实测证实 anthropics/skills 官方 marketplace 路径是 **all-or-nothing**——装一个 plugin = 17 个 skill 全部注入，无法只装绿灯 9 个。三方案权衡后选 **接受全装 + 用法约束**（方案 C）：
+
+- **理由**：① skill metadata 注入只占 system prompt 小开销（量级 1-3k token，每次新会话各加一次，不增长）；② 自建 marketplace 维护成本高于收益；③ 误触率在使用中观察即可。
+- **后果**：原"不装清单"（§7）语义改为"**装但不主动调用**"用法约束清单。
+- **承担**：放弃精确加载控制，换得官方更新通道顺畅。
+
 ---
 
 ## 三、核心 MCP Servers（不是 Skill，但配套讲）
@@ -149,23 +157,29 @@ Claude Code 生态里"Skill"被泛化使用，**4 类东西经常被混为一谈
 
 ---
 
-## 五、凯戈当前已有的 Skills（系统检测，2026-05-05）
+## 五、凯戈当前已有的 Skills（系统检测，2026-05-05 订正版）
 
 ```
-当前会话已加载：
+当前会话已加载（Skills 类）：
 ├── update-config         — 配置 settings.json
 ├── keybindings-help      — 键盘快捷键
 ├── simplify              — 代码审查 / 简化
 ├── loop                  — 定时循环任务
 ├── schedule              — 远程定时 agent
 ├── claude-api            — Claude API / SDK 应用 ✅ 官方 Skill 已装
-├── battle-report         — VEX 世锦赛战情报告（凯戈自建）
 ├── claude-hud:setup      — statusline 配置
 └── claude-hud:configure  — HUD 显示选项
 ```
 
-**关键认知**：
-- `battle-report` 是凯戈自建项目专属 Skill —— **Skill Creator 你已经用过**
+```
+当前会话已加载（Slash 命令类，不是 Skill）：
+└── /battle-report        — VEX 世锦赛战情报告（凯戈自建）
+                            位置：~/.claude/commands/battle-report.md
+```
+
+**关键认知（2026-05-05 订正）**：
+- ⚠️ **`battle-report` 是 Slash 命令不是 Skill** —— v1 把它误归为 Skill，本次订正。两类机制不同：Skill 走 SKILL.md + YAML frontmatter + plugin/marketplace 路径，Slash 命令走 `~/.claude/commands/<name>.md` 单文件路径。
+- ✅ 凯戈机器上目前 **0 个自建 Skill**（曾经写过的 `battle-report` 是 slash 命令）。下一个候选自建 Skill：`kb-ingestor`（PDF→wiki 流程封装），见 §6 阶段 C。
 - `claude-api` 已装在系统，是 17 个官方 Skill 之一
 
 ---
@@ -185,6 +199,8 @@ Claude Code 生态里"Skill"被泛化使用，**4 类东西经常被混为一谈
 | 5 | 装 **Context7 MCP** | vex-iq-build-assistant feature/analyzer | Three.js 调用对比记忆 vs 实时文档 | ⏳ 待触发 |
 
 > **实测脚注（2026-05-05）**：第 1 步装一个 `document-skills` plugin = 仓库 `skills/` 下 17 个 skill 全部注入。`marketplace.json` 的 `skills` 字段不约束加载范围。详见 §10.1「marketplace 安装行为修正」。
+>
+> **战略修正定型（2026-05-05）**：经"切第三方 / 自建 marketplace / 接受全装"三方案权衡，定型为 **接受全装 + 用法约束**。详见 §2 末尾「装入策略」段与 §7 重写后清单。
 
 ### 阶段 B：未来项目储备（按触发条件）
 
@@ -209,23 +225,37 @@ Claude Code 生态里"Skill"被泛化使用，**4 类东西经常被混为一谈
 
 ---
 
-## 七、不装清单（理由比"不推荐"重要）
+## 七、用法约束清单（装但不主动调用 / 不装）
 
-> ⚠️ **2026-05-05 实测发现**：本表在 Anthropic 官方 marketplace 路径上**机制不可执行** — 装 `document-skills` 一个 plugin 就把仓库 17 个 skill 全部注入（含本表中的 brand-guidelines / theme-factory / slack-gif-creator / algorithmic-art）。当前缓解：skill 仅 metadata 注入，不主动执行；本表的"不装"理由仍作为**用法约束**有效（即「装上但不主动调用」）。详见 §10.1。
+> **2026-05-05 战略修正定型**：经实测，anthropics/skills 官方 marketplace 是 all-or-nothing，无法精确加载。决定 **接受全装**（详见 §2 末尾「装入策略」）。本节从 v1 的"不装清单"重构为两部分：
 >
-> 战略修正（切第三方 marketplace / 自建 marketplace 路径）留作下次开工首件事。
+> - **7.1 装但不主动调用**：在 anthropics/skills 17 个 skill 中，因场景不匹配、与现有 governance 冲突、或低频用途而**不主动 invoke** 的 skill。它们仍占 metadata 槽位，但通过 system-prompt / feedback memory 抑制 LLM 自动触发。
+> - **7.2 不装**：根本不进入安装范围的工具（社区 prompt 包 / 重叠的 MCP / 误归类的 CLI）。
 
-| Skill / 工具 | 不装的真正原因 |
+### 7.1 装但不主动调用（在 anthropics/skills 内）
+
+| Skill | 不主动调用的原因 |
 |---|---|
-| Superpowers | 已有 `system-prompt.md` + `coding-standards.md` + 8+ 条 feedback memory，再注入"最佳实践"会与现有 governance 抢优先级 |
-| GPT Researcher | llm-research-kb + karpathy-kb-research 是亲手搭的方法论中台，不被替代 |
-| Systematic Debugging / Code Refactoring | 概念性 prompt 包；已有内置 `simplify` Skill + dev_log + 小步走 |
-| Marketing Skills | CTO 路线，不在战场 |
-| Changelog Maintenance | dev_log.md + WIP.md + 频繁 push 节奏更顺手 |
-| Tavily MCP（暂） | WebSearch 当前够用，深度调研不卡再装 |
-| Filesystem / Memory / Sequential Thinking MCP | Claude Code 已内置等价能力，装上反而占 token |
-| brand-guidelines / theme-factory / slack-gif-creator / algorithmic-art | 场景不匹配 |
-| **tmux 当 Skill 装** | 它是 brew CLI 工具，**不是 Skill**；有长任务再装 |
+| brand-guidelines | 场景不匹配——仅 Anthropic 内部品牌应用 |
+| theme-factory | 场景不匹配——10 种预设主题对凯戈项目低频 |
+| slack-gif-creator | 场景不匹配——不用 Slack |
+| algorithmic-art | 仅创意/教学示例，低频 |
+| internal-comms | CTO 路线非主战场，3P updates 体例对个人开发者过重 |
+
+**抑制方式**：在项目 CLAUDE.md / system-prompt.md 中明确"非该场景不调用 X skill"。误触率在使用中观察，必要时追加 feedback memory。
+
+### 7.2 不装（不进入安装范围）
+
+| 工具 | 不装的真正原因 | 类型 |
+|---|---|---|
+| Superpowers | 已有 `system-prompt.md` + `coding-standards.md` + 8+ 条 feedback memory，再注入"最佳实践"会与现有 governance 抢优先级 | 社区 prompt 包 |
+| GPT Researcher | llm-research-kb + karpathy-kb-research 是亲手搭的方法论中台，不被替代 | 独立项目 |
+| Systematic Debugging / Code Refactoring | 概念性 prompt 包；已有内置 `simplify` Skill + dev_log + 小步走 | 社区 prompt 包 |
+| Marketing Skills | CTO 路线，不在战场 | 社区包 |
+| Changelog Maintenance | dev_log.md + WIP.md + 频繁 push 节奏更顺手 | 社区 |
+| Tavily MCP（暂） | WebSearch 当前够用，深度调研不卡再装 | MCP |
+| Filesystem / Memory / Sequential Thinking MCP | Claude Code 已内置等价能力，装上反而占 token | MCP |
+| **tmux 当 Skill 装** | 它是 brew CLI 工具，**不是 Skill**；有长任务再装 | CLI |
 
 ---
 
