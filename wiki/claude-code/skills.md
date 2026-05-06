@@ -321,7 +321,7 @@ Claude Code 生态里"Skill"被泛化使用，**4 类东西经常被混为一谈
 
 **输入**：`VIQRC-level-up-0.1-manual.pdf`（93 页 / 9.33 MB）+ 中文版 73 页对照
 **对照基线**：fitz / PyMuPDF 1.27.2.2（karpathy-kb 既有管线）
-**完整报告**：`~/vex-iq-kb/raw/game-manual/skill-test/REPORT.md`
+**完整报告**：[[pdf-skill-vs-fitz]]（wiki 详细页）· 原始数据：`~/vex-iq-kb/raw/game-manual/skill-test/REPORT.md`（本地，gitignore）
 
 #### pdf skill vs fitz 综合评分
 
