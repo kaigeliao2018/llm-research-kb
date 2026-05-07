@@ -334,7 +334,7 @@ Claude Code 生态里"Skill"被泛化使用，**4 类东西经常被混为一谈
 | 图像召回 | ★★★★ | ★★★★ | 平（金标准 R3-1/R4-1 双方 phash d=0 命中） |
 | 图像易用性 | ★★ | ★★★★ | fitz 自带页码 + 直接 PNG；pdfimages 输出 .ppm 无页码 |
 | 中文支持 | ★★★★★ | ★★★★★ | 平（中文版 0 乱码、长句完整） |
-| OCR 能力 | ★★★★（pytesseract） | ★（无原生） | skill 加分项（本次未实测） |
+| OCR 能力 | ★★★★（pytesseract，仅扫描件场景） | ★（无原生） | **2026-05-07 补测**：born-digital PDF 跑 OCR 反而劣化（计分表 5 行数字全丢 + 装饰底纹误读为 `e e e`）。OCR 仅对无文本层 PDF / 图内嵌字有价值。详见 `~/vex-iq-kb/raw/game-manual/skill-test/ocr-test/REPORT.md` |
 | 表单处理 | ★★★★★（forms.md） | ★★ | skill 加分项（本次未实测） |
 | **综合** | **3.4 ★** | **4.0 ★** | **当前 VEX 任务 fitz 主选** |
 
@@ -342,8 +342,9 @@ Claude Code 生态里"Skill"被泛化使用，**4 类东西经常被混为一谈
 
 | 场景 | 选谁 | 理由 |
 |---|---|---|
-| 积分表 + 图示密集的 born-digital PDF（如 Game Manual） | **fitz** | 精度高、自带页码、单库部署 |
-| 扫描 PDF / 需要 OCR | **pdf skill** | pytesseract + pdf2image 是 fitz 弱项 |
+| 积分表 + 图示密集的 born-digital PDF（如 Game Manual） | **fitz** | 精度高、自带页码、单库部署；**不要切 OCR**（2026-05-07 实测反而丢分数列）|
+| 扫描 PDF / 无文本层 PDF | **pdf skill** | fitz `get_text()` 返回空时唯一选择 |
+| 图内嵌字（Figure 标签/截图） | **pdf skill OCR 局部** | fitz 不能读栅格图内文字，整页 OCR 又得不偿失 |
 | 表单填写 | **pdf skill** | forms.md + 8 个填表脚本 |
 | 中文 PDF | 任选 | pdfplumber / fitz 中文支持都 ★★★★★ |
 
@@ -352,6 +353,7 @@ Claude Code 生态里"Skill"被泛化使用，**4 类东西经常被混为一谈
 1. **中文版 PDF 反而比英文版干净**：英文版 25 个表格误判（红框 + 装饰底框）在中文版**为 0** —— 噪声根因是英文版排版工艺，不是 pdfplumber 算法缺陷
 2. **pdfimages 比 fitz 多 109 张图**，但去重后只多 15 张唯一图 —— 多出的是装饰元素重复实例，非新内容
 3. **R3 / R4 主条文物理页号中英完全一致**（都在 page 48-49）—— VEX 排版结构性巧合
+4. **OCR 对 born-digital PDF 反而劣化**（2026-05-07 补测）：物理页 21 跑 pytesseract，计分表 5 个分数列**全部丢失**，装饰底纹被误读为 `e e e` / `YUL ALLL LLL...` —— 与「pdfplumber 25 个表误判（红框 + 装饰底框）」**同根因**：装饰元素干扰像素级算法，不干扰原生文本流
 
 #### 实测发现：marketplace 安装行为修正
 

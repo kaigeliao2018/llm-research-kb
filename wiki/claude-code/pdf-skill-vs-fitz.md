@@ -87,7 +87,7 @@
 | 图像召回 | ★★★★ | ★★★★ | 平 |
 | 图像易用性 | ★★ | ★★★★ | fitz 自带页码 + PNG |
 | 中文支持 | ★★★★★ | ★★★★★ | 平 |
-| OCR 能力 | ★★★★（pytesseract）| ★（无原生）| skill 加分项（本次未实测）|
+| OCR 能力 | ★★★★（pytesseract，仅扫描件场景）| ★（无原生）| **2026-05-07 补测**：born-digital PDF 跑 OCR 反而劣化（见下文 §六.5）|
 | 表单处理 | ★★★★★（forms.md）| ★★ | skill 加分项（本次未实测）|
 | **综合** | **3.4 ★** | **4.0 ★** | **当前 VEX 任务 fitz 主选** |
 
@@ -97,11 +97,29 @@
 
 | 场景 | 选谁 | 理由 |
 |------|------|------|
-| 积分表 + 图示密集的 born-digital PDF | **fitz** | 精度高、自带页码、单库部署 |
-| 扫描 PDF / 需要 OCR | **pdf skill** | pytesseract 是 fitz 弱项 |
+| 积分表 + 图示密集的 born-digital PDF | **fitz** | 精度高、自带页码、单库部署；**不要切 OCR**（§六.5）|
+| 扫描 PDF / 无文本层 PDF | **pdf skill** | fitz `get_text()` 返回空时唯一选择 |
+| 图内嵌字（Figure 标签 / 截图旁注） | **pdf skill OCR 局部** | fitz 不能读栅格图内文字，整页 OCR 反劣化 |
 | 表单填写 | **pdf skill** | forms.md + 8 个填表脚本 |
 | 中文 PDF | 任选 | 两者中文支持均 ★★★★★ |
-| 混合场景 | fitz 主路径 + pdf skill OCR 备用 | 按需组合 |
+
+### 六.5 OCR 维度补测（2026-05-07）
+
+跟进表中 OCR 行"本次未实测"遗留项。物理页 21（Scoring 章节，文字 + 计分表 + Figure SC3-1）单页对比：
+
+| 维度 | fitz | pytesseract OCR (300 dpi) |
+|---|---|---|
+| 字符数 | 2159 | 2045 |
+| 计分表 5 行 + 5 个分数 | ✅ 全到位 | ❌ 只读 3 行，**5 个分数全丢** |
+| 装饰底纹 | 无干扰 | 误读为 `e e e e e` / `YUL ALLL LLL...` |
+| 速度 | ~50 ms/页 | ~5 s/页（100×慢）|
+| 平均置信度 | N/A | 92.6% |
+
+**反直觉结论**：born-digital PDF 跑 OCR 反而劣化。装饰元素干扰像素级算法（OCR / pdfplumber），但不干扰原生文本流（fitz）—— 与 §四 表格精度一节"pdfplumber 25 个表误判"同根因。
+
+**OCR 真正用武之地**：① 扫描件 / 文本层缺失；② 图内嵌字（Figure 标签）局部 OCR；③ 截图入库（学生上传赛规截图）。
+
+完整数据：`~/vex-iq-kb/raw/game-manual/skill-test/ocr-test/REPORT.md`（本地，gitignore）
 
 ---
 
@@ -127,10 +145,16 @@
 │   ├── text_pdftotext_layout.txt
 │   ├── tables_pdfplumber.json  # 38 表（13 真 + 25 噪声）
 │   └── images_pdfimages/       # 233 张 .ppm
-└── fitz-out/
-    ├── text_fitz.txt
-    ├── tables_fitz.json        # 13 表（全真）
-    └── images_fitz/            # 124 张 .png
+├── fitz-out/
+│   ├── text_fitz.txt
+│   ├── tables_fitz.json        # 13 表（全真）
+│   └── images_fitz/            # 124 张 .png
+└── ocr-test/                   # 2026-05-07 OCR 补测
+    ├── run_fitz.py / run_ocr.py
+    ├── fitz_text.txt / ocr_text.txt
+    ├── fitz_tables.json / ocr_data.json
+    ├── page21_render.png / page21_300dpi.png
+    └── REPORT.md               # OCR 补测报告
 ```
 
 ---
