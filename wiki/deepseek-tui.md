@@ -173,11 +173,55 @@ brew unlink deepseek-tui && brew link deepseek-tui
 ✅ 中文 UI 生效（Composer 提示"编写任务或使用 /"）
 ✅ Skills 自动检测到 `.claude/skills`（6 项）
 
-**待办**（task #1）：让 DeepSeek-TUI 默认扫 `.claude/skills`（当前 selected = `~/.deepseek/skills`，要改 config 或加软链）。
+**Skills 软链已配**（2026-05-08）：`~/.deepseek/skills/` 下已建 `greet-kaige` + `kb-ingestor` 软链指向 `~/.claude/skills/` 对应目录（`~/.claude/skills` 实际只 2 个真 skill，原以为 6 项是把 `.git/.gitignore/README.md/.DS_Store` 误数）。
 
 ---
 
-## 九、来源
+## 九、实战表现实测（2026-05-08）
+
+> **场景**：凯戈让 V4 跑 `~/magicode-website` 项目分析（500 行级静态站，Plan 只读模式），让 Claude（Opus 4）核对 V4 报告。
+
+### 9.1 报告质量
+
+V4 列出 3 处问题：
+1. Apple Silicon 检测靠 `navigator.maxTouchPoints > 1` 不可靠
+2. `navigator.userLanguage` 是 IE 死代码
+3. i18n 通用 `[data-i18n-html]` 处理器后被硬编码 `replace('\n', '<br>')` 覆盖，未来重构会断裂
+
+**Claude 核对结果**：
+- ✅ **3 处全是真问题，0 处幻觉**
+- ⚠️ 行号系统性偏移（+9 / +1 / +3~5）— 代码片段引用准确，但行号数错
+- 问题 3 那个"未来重构会断裂"的推理 **接近 Claude / Codex 的洞察深度**
+
+### 9.2 反思力实测
+
+凯戈把 Claude 评价转给 V4，问"为什么所有行号都偏？是不是读了缓存？"
+
+V4 回应：
+- **承认错误**，给出三个偏移量明细表
+- **根因诊断**：`read_file` 返回纯文本不带行号 → 手工数行精度不足
+- **排除系统性偏移假设**：偏移量方向不同（+9 vs +1 vs +3~5）反证不是缓存/旧版本
+- **可操作改进**：下次用 `grep_files` 拿行号，不裸眼数
+
+| 反思维度 | 评分 |
+|---|---|
+| 承认错误 | ⭐⭐⭐⭐⭐ 直接认账，不甩锅 |
+| 根因诊断 | ⭐⭐⭐⭐⭐ 用偏移方向反证排除假设 |
+| 可操作改进 | ⭐⭐⭐⭐ 具体工具 + 具体场景 |
+| 反思深度 | ⭐⭐⭐⭐ 定位到工具层根因，不是粗心 |
+
+**对比 Gemini**：被指出错误后 Gemini 倾向"补论据/扩展讨论"，V4 直接走"承认 + 根因 + 改进"三件套，**接近 Claude / Codex 反思质量**。
+
+### 9.3 工具链定位（实测后定型）
+
+✅ **第二审视角**（Plan / 只读模式）：替代或并行 Gemini 做代码 review
+✅ **价格优势**：V4-Pro 输出 $0.87/1M（Claude Opus 的 ~1/15），75% 折扣 5-31 到期
+✅ **不替代 Claude Code 主战**：但**值得长期保留**作为审查/对账层
+⚠️ **行号建议用 grep 校验**：写入 KB 前先 `grep -n` 验一下，避免下游引用错误
+
+---
+
+## 十、来源
 
 - [Hmbown/DeepSeek-TUI](https://github.com/Hmbown/DeepSeek-TUI)（仓库）
 - [GitHub API: Hmbown/DeepSeek-TUI](https://api.github.com/repos/Hmbown/DeepSeek-TUI)（实证 stars/forks）
@@ -186,7 +230,7 @@ brew unlink deepseek-tui && brew link deepseek-tui
 - [Artificial Analysis: DeepSeek V4-Pro](https://artificialanalysis.ai/models/deepseek-v4-pro)（Intelligence Index 52，排第 3）
 - [HN #47884971: DeepSeek v4](https://news.ycombinator.com/item?id=47884971)（2091 赞 / 1607 评论）
 
-## 十、关联词条
+## 十一、关联词条
 
 - [[deepseek-v4]] — V4 模型本身的研究
 - [[deepseek-v4-pricing]] — V4 定价细节
