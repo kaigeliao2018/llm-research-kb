@@ -93,6 +93,16 @@ related: skills.md / skills-howto.md / skills-factcheck-2026-05-05.md
 | [daymade/claude-code-skills](https://github.com/daymade/claude-code-skills) | 个人精品 marketplace，含 prompt-optimizer / ppt-creator / youtube-downloader | 中文友好，**架构值得借鉴** |
 | [sickn33/antigravity-awesome-skills](https://github.com/sickn33/antigravity-awesome-skills) | 1400+ skills，含 npm 安装器 | 体量大，有筛选机制 |
 
+### 3.2.1 中文社区精品（2026-05 凯戈实测入库）
+
+| 仓库 | 价值 | 来源 |
+|---|---|---|
+| [op7418/guizang-ppt-skill](https://github.com/op7418/guizang-ppt-skill) | 单文件 HTML 横向翻页 PPT，双视觉系统（电子杂志风 × 瑞士国际主义），7.8K stars，已装入 kaige-skills | 归藏大佬，经凯戈视频→Gemini→Claude 验证 |
+| [nextlevelbuilder/ui-ux-pro-max-skill](https://github.com/nextlevelbuilder/ui-ux-pro-max-skill) | Python 驱动的设计智能工具包，67+ UI 风格、161 配色、57 字体配对，已装入 kaige-skills | 社区，star 数未直接核实；Python 脚本搜索，非标准 Skill.md |
+| [gsd-build/gsd-2](https://github.com/gsd-build/gsd-2) | 结构化工程工作流（讨论→计划→执行→验证），29个 Skills + 12个 subagent；适合复杂任务纪律 | 社区，star 数未核实；与 obra/superpowers 功能相近 |
+
+> **来源说明**：上述三条来自中文自媒体视频（小红书），经 Gemini 解析 + Claude 交叉验证确认真实存在。guizang-ppt 已直接核实（7.8K stars）；ui-ux-pro-max 和 gsd star 数为 sub-agent 报告，未独立核实，仅供参考。
+
 ### 3.3 Tier B — 垂直领域
 
 - **科学计算**：K-Dense-AI/claude-scientific-skills
