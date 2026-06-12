@@ -1,18 +1,55 @@
 ---
 name: 即梦 CLI（Dreamina CLI）实战研究
-description: 字节跳动即梦官方 AIGC CLI 工具的装机实录、命令体系、参数矩阵、限制与坑、凯戈实战建议
+description: 字节跳动即梦官方 AIGC CLI 工具的装机实录、命令体系、参数矩阵、限制与坑、凯戈实战建议；2026-06-12 实测重大事实：CLI 对 standard 账号封死，需 maestro vip 才能用 generator
 type: research
 date: 2026-06-12
-status: 装机完成 + 文档级研究 + 待登录后实测
-related: claude-code-skill / dreamina-web / seedance-2.0 / jimeng-membership
+status: 装机完成 + 实测纠错 + **CLI 对 standard 账号封死**
+related: claude-code-skill / dreamina-web / seedance-2.0 / jimeng-membership / maestro-vip
 ---
 
 # 即梦 CLI（Dreamina CLI）实战研究
 
 > 研究日期：2026-06-12
-> 研究员：凯戈 + Claude
+> 研究员：凯戈 + Claude（含 Codex 协同验证）
 > 触发场景：magikid-selfmedia 装机演练；剪映 X 即梦联合会员弹窗推动调研字节 AI 工具栈
-> 状态：CLI 已装机，未 login（避免提前进入积分消耗态），所有命令仅做 `-h` 文档级研究
+> 状态：CLI 已装机，已 login 实测，**确认 CLI generator 对 standard 账号全部封死**，必须 maestro vip 才能用
+
+---
+
+## ⚠️ 最重要的事实（2026-06-12 实测纠错）
+
+**CLI 有未文档化的服务端权限门**：
+
+```bash
+$ dreamina login
+已复用当前本地 OAuth 登录态。
+当前登录账户信息：
+user_id: 4063412744103192
+vip_level: standard
+total_credit: 1168
+登录成功，但当前账号没有 dreamina_cli 使用权限: current account is not maestro vip
+```
+
+**关键认知**：
+
+| 项 | 实测结论 |
+|---|---|
+| OAuth 登录 | ✅ 能成功（token 写入 Keychain 正常）|
+| 账号信息查询 | ✅ 能读 user_id / vip_level / total_credit |
+| **`user_credit` / `session` / 所有 generator** | ❌ **全部被服务端拒绝**，报 `current account is not maestro vip` |
+| 限制位置 | **字节服务端**（install.sh / SKILL.md / 任何 `-h` 都查不到 maestro 字样，纯隐性门）|
+| Maestro VIP 是什么 | **未确认**（候选：即梦 Pro / 剪映 X 即梦联合会员 / 字节 Maestro 平台独立会员）|
+
+**对凯戈的实际影响**：
+- 凯戈 vip_level = `standard`（即梦基础会员 = 字节体系内的 standard 等级）
+- **CLI 这条路径目前对凯戈完全不可用**
+- 装机演练只能走**网页版即梦**主线
+
+**调研教训（沉淀给未来的自己）**：
+- ❌ Claude 第一次查 install.sh / SKILL.md / 所有 `-h` 输出**都没有 maestro 字样**，就否定了 Codex 的判断
+- ✅ Codex 的判断**对了**（即便 Codex 自己没说出依据是什么，结论是对的）
+- ✅ 真相由**实测 login 返回的明文错误**揭示，**官方文档不写但服务端会告诉你**
+- 教训：**未文档化的服务端限制只有实测能发现**，源码搜索是不充分的
 
 ---
 
@@ -209,11 +246,29 @@ dreamina user_credit                                                     # 终�
 | 4.0 / 2k | 5-15 |
 | 5.0 / 4k | 20-50 |
 
-### 6.2 VIP 模型权限不明
+### 6.2 ⚠️ Maestro VIP 权限门 — 实测确认整个 CLI 对 standard 账号封死
 
-`seedance2.0_vip` 和 `seedance2.0fast_vip` 字面意思是 VIP 模型，**字节产品线的 VIP 通常指即梦 Pro 会员**，不是基础会员。凯戈基础会员是否能用 VIP 模型 → 需要登录后实测，**报权限错误就要升 Pro**。
+**2026-06-12 实测重大发现**：CLI 不只是 `seedance2.0_vip` 这种 VIP 模型受限，**整个 CLI generator 链路都需要 maestro vip 等级**。
 
-这条直接关联 2026-06-12 早上看到的「**剪映 X 即梦联合会员限时 3 折**」弹窗 —— 如果想出 1080p 视频，可能要走联合会员升级路径。
+```bash
+$ dreamina user_credit
+# 服务端返回：current account is not maestro vip
+```
+
+| 等级 | 凯戈状态 | CLI 可用性 |
+|---|---|---|
+| standard（即梦基础会员）| ✅ 当前 | ❌ 仅能查账号信息，所有 generator 封死 |
+| maestro vip | ❌ 非此等级 | ✅ 推测能用（未实测）|
+
+**Maestro VIP 是什么 — 候选猜测（均未确认）**：
+- 即梦 Pro 会员的内部代号
+- 剪映 X 即梦联合会员（2026-06-12 早上看到的 3 折弹窗）
+- 字节内部 Maestro 平台的独立会员（Maestro 是字节的 AI 编排平台）
+
+**调研 TODO**（决策时机：凯戈考虑升级会员时）：
+1. 查即梦 Pro 是不是 maestro vip
+2. 查剪映 X 即梦联合会员是不是 maestro vip
+3. 价格 vs 单独续费的对账
 
 ### 6.3 login 是所有命令的门
 
@@ -256,6 +311,10 @@ dreamina list_task --gen_status=success
 
 ### 7.1 装机演练标准操作流（SOP）
 
+⚠️ **以下 SOP 仅适用于 maestro vip 账号**。standard 账号（凯戈当前等级）**只能走网页版**，CLI 全部 generator 被服务端拒绝。
+
+**Maestro VIP 账号 SOP**（凯戈未来升级后启用）：
+
 ```bash
 # === 一次性：装机 + 登录 + 建项目 session ===
 bash /tmp/dreamina-install.sh                          # 装
@@ -276,6 +335,16 @@ dreamina text2image \
 # === 项目收口 ===
 dreamina list_task --session=<id>                      # 看历史
 dreamina user_credit                                   # 看总消耗
+```
+
+**Standard 账号实际能做的**（凯戈当前可用）：
+
+```bash
+dreamina version                  # ✅ 看 build 信息
+dreamina --help                   # ✅ 看命令体系
+dreamina <subcommand> -h          # ✅ 看子命令参数
+dreamina login                    # ✅ 能登录拿账号信息（但 generator 还是封死）
+# 生产工作 → 走网页版 jimeng.jianying.com
 ```
 
 ### 7.2 不同场景的配置建议
@@ -299,16 +368,19 @@ dreamina user_credit                                   # 看总消耗
 
 ## 八、未确认 / 待补 TODO
 
-| 项 | 优先级 | 何时补 |
-|---|---|---|
-| 单张图实测积分（4.0/2k）| **高** | Codex Step 5 第一步 |
-| `seedance2.0_vip` 基础会员能否用 | **高** | 试跑一次 multimodal2video |
-| Pro 会员升级价格 vs 单独续费 | 中 | 看「剪映 X 即梦联合会员 3 折」具体价格 |
-| 即梦网页版 vs CLI 功能差异 | 中 | 网页版主线跑完后对照 |
-| CLI 生成的图/视频默认保存路径 | 中 | 登录后第一张图实测 |
-| SKILL.md 接入 `~/.claude/skills/` 后的 Claude Code 实际触发体验 | 低 | 后期 000 号选题前再决策 |
-| Seedance 2.0 vs 即梦视频生成的关系（Seedance 是否就是即梦内部模型代号？）| 低 | 字节技术博客查证 |
-| `text2image` default model 实测是哪一个 | 低 | 不指定 model_version 跑一次看输出 |
+⚠️ **大多数 TODO 现在跑不了**（需要 maestro vip 等级），等凯戈未来升级会员后再启动。
+
+| 项 | 优先级 | 何时补 | 前置条件 |
+|---|---|---|---|
+| **Maestro VIP 到底是什么等级**（即梦 Pro / 联合会员 / Maestro 平台）| **高** | 凯戈考虑升级会员前 | 无（可纯查证）|
+| Maestro VIP 升级价格 vs 单独续费对账 | **高** | 同上 | 同上 |
+| 单张图实测积分（4.0/2k）| 中 | 升级 maestro vip 后 | maestro vip |
+| `seedance2.0_vip` 是否包含在 maestro vip 范围 | 中 | 同上 | maestro vip |
+| 即梦网页版 vs CLI 功能差异 | 中 | 网页版主线跑完后对照 | 无 |
+| CLI 生成的图/视频默认保存路径 | 中 | 升级后第一张图实测 | maestro vip |
+| SKILL.md 接入 `~/.claude/skills/` 后的 Claude Code 实际触发体验 | 低 | 后期 000 号选题前 | maestro vip |
+| Seedance 2.0 vs 即梦视频生成的关系（Seedance 是否就是即梦内部模型代号？）| 低 | 字节技术博客查证 | 无 |
+| `text2image` default model 实测是哪一个 | 低 | 不指定 model_version 跑一次看输出 | maestro vip |
 
 ---
 
@@ -320,7 +392,7 @@ dreamina user_credit                                   # 看总消耗
 |---|---|---|
 | **剪映**（CapCut 国内版）| 视频剪辑端（含数字人、字幕）| Coach Leo 个人版 SVIP，到期 2026-06-21 |
 | **即梦网页版** | AI 生成端（UI 优先）| 基础会员，1080 积分/月，下次续费 2026-07-07 |
-| **即梦 CLI**（本研究）| AI 生成端（Agent 优先）| 已装 v1.4.5，未登录 |
+| **即梦 CLI**（本研究）| AI 生成端（Agent 优先）| 已装 v1.4.5，**已登录但 standard 等级被服务端拒绝调用 generator**；需 maestro vip 才能真正使用 |
 | **HeyGen** | 国际数字人工具 | 已登录（备用 / 对照学习）|
 | **ElevenLabs** | 国际配音 | 备用，暂不启用 |
 | **剪映 X 即梦联合会员**（3 折弹窗）| 字节官方推合并订阅 | **未决策**，等装机演练跑完再判 |
@@ -348,9 +420,27 @@ CLI 在此链路中的位置：**Agent 自动化生成端**。让 Claude Code / 
 
 ---
 
-**研究状态**：装机 + 文档级研究完成。登录 + 实测留给 magikid-selfmedia 装机演练 Step 5 八张图卡 / 后期 000 号选题视频生产。
+**研究状态**：装机 + 实测 + Maestro VIP 权限门发现完成。**CLI 对凯戈（standard 等级）实际不可用**，装机演练改走网页版即梦主线（jimeng.jianying.com）。
 
 **下一次更新触发条件**：
-- 跑通积分基线测试后，更新「六-6.1 积分消耗」段落实测数据
-- 实测 VIP 模型权限后，更新「六-6.2 VIP 权限」段落
-- 即梦 Pro 升级决策后，更新「九-9.1 工具栈」凯戈状态
+- "Maestro VIP 是什么" 查证后（即梦 Pro / 联合会员 / 独立 Maestro 平台）→ 更新「六-6.2」+「八」段落
+- 凯戈未来升级到 maestro vip 后实测积分消耗 → 更新「六-6.1」+「七-7.1」段落
+- 即梦官方公开承认 standard 不可用 CLI 后 → 更新「⚠️ 最重要的事实」段落（标记为已文档化）
+
+---
+
+## 附：本次研究的元教训（沉淀给未来的自己）
+
+**事实链**：
+1. Claude 第一次查 install.sh / SKILL.md / 所有 `-h` 输出 → 无 maestro 字样 → 否定 Codex 的"maestro vip"判断
+2. 凯戈实测 `dreamina login` → 服务端返回明文错误 `current account is not maestro vip` → Codex 判断成立
+3. Claude 立刻承认错误，纠正所有此前结论
+
+**违反的铁律**：
+- 触发了 [[feedback_research_rigor]] 反面：源码搜索"找不到"≠"不存在"，**未文档化的服务端限制只有实测能发现**
+- 触发了 [[feedback_truth_first]] 正面：发现错误立刻摆正，不为面子拖延
+
+**学到的新规则**（建议沉淀为新 memory）：
+- **"源码不出现 X 字样" 不能否定 "服务端有 X 限制"**
+- 反之亦然：服务端的隐性限制（权限门、配额门、地区门）通常只在 API 返回的 error message 里暴露
+- 调研服务端限制的唯一可靠路径 = 实测 + 读 error log，**不是** grep 源码
